@@ -14,6 +14,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.accueil": "ACCUEIL",
     "nav.concept": "CONCEPT",
     "nav.domaine": "LE DOMAINE",
+    "nav.offres": "OFFRES",
     "nav.modeles": "MODÈLES",
     "nav.galerie": "GALERIE",
     "nav.contact": "CONTACTEZ-NOUS",
@@ -143,6 +144,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.accueil": "HOME",
     "nav.concept": "CONCEPT",
     "nav.domaine": "THE ESTATE",
+    "nav.offres": "OFFERS",
     "nav.modeles": "MODELS",
     "nav.galerie": "GALLERY",
     "nav.contact": "CONTACT US",
@@ -250,7 +252,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Footer
     "footer.desc": "Architectural elegance at the service of your serenity. Prestige in Marrakech redefined. Reserve your future villa now.",
     "footer.contactTitle": "Contact our agency",
-    "footer.copyright": "© 2026 BENAK HILLS. ALL RIGHTS RESERVED.",
+    "footer.copyright": "Â© 2026 BENAK HILLS. ALL RIGHTS RESERVED.",
     "footer.legal": "LEGAL NOTICE",
     "footer.privacy": "PRIVACY POLICY",
     // Legal Page

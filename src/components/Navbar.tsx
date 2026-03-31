@@ -18,6 +18,7 @@ const Navbar = () => {
   const navLinks = [
     { name: t("nav.accueil"), href: "#accueil" },
     { name: t("nav.concept"), href: "#concept" },
+    { name: t("nav.offres"), href: "#offres" },
     { name: t("nav.modeles"), href: "#modeles" },
     { name: t("nav.galerie"), href: "#galerie" },
     { name: t("nav.contact"), href: "#contact" },
@@ -43,44 +44,48 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <a href="#accueil" className="flex items-center gap-3 group" onClick={(e) => handleLinkClick(e, "#accueil")}>
           <div className="relative">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="text-gold group-hover:scale-110 transition-transform duration-500">
-               <rect x="8" y="20" width="4" height="16" rx="1" fill="currentColor" opacity="0.7" />
-               <rect x="14" y="12" width="4" height="24" rx="1" fill="currentColor" opacity="0.85" />
-               <rect x="20" y="4" width="4" height="32" rx="1" fill="currentColor" />
-               <rect x="26" y="12" width="4" height="24" rx="1" fill="currentColor" opacity="0.85" />
-               <rect x="32" y="20" width="4" height="16" rx="1" fill="currentColor" opacity="0.7" />
+            <svg width="45" height="45" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gold group-hover:scale-110 transition-transform duration-500">
+              <path d="M20 80V40L40 20V80H20ZM45 80V10L65 30V80H45ZM70 80V50L90 70V80H70Z" fill="currentColor" />
+              <rect x="10" y="80" width="80" height="2" fill="currentColor" />
             </svg>
           </div>
-          <div>
-            <span className="text-foreground text-xl font-heading tracking-widest block leading-none">BENAK HILLS</span>
-            <span className="text-gold text-[8px] tracking-[0.3em] font-body uppercase opacity-70">Marrakech Prestige</span>
+          <div className="flex flex-col">
+            <span className="text-white text-xl font-heading tracking-[0.2em] leading-none">BENAK</span>
+            <span className="text-white text-sm font-heading tracking-[0.3em] opacity-80 mt-1">HILLS</span>
           </div>
         </a>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-10">
-          <div className="flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8">
+          <div className="flex items-center gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleLinkClick(e, link.href)}
-                className="text-[11px] tracking-widest font-body text-foreground/70 hover:text-gold transition-colors duration-300 uppercase"
+                className="text-[10px] tracking-widest font-body text-white/70 hover:text-gold transition-colors duration-300 uppercase"
               >
                 {link.name}
               </a>
             ))}
           </div>
 
-          <div className="h-6 w-px bg-white/10 mx-2" />
-
-          <button
-            onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-            className="flex items-center gap-2 text-[10px] font-body tracking-[0.2em] text-foreground/50 hover:text-gold transition-all group px-3 py-1.5 border border-white/5 hover:border-gold/30 rounded-full"
-          >
-            <Globe className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
-            {lang.toUpperCase()}
-          </button>
+          <div className="flex items-center gap-6 ml-4">
+            <button
+              onClick={() => setLang(lang === "fr" ? "en" : "fr")}
+              className="flex items-center gap-2 text-[10px] font-body tracking-[0.2em] text-white/50 hover:text-gold transition-all"
+            >
+              <Globe className="w-3 h-3" />
+              {lang.toUpperCase()}
+            </button>
+            <a 
+              href="#contact" 
+              onClick={(e) => handleLinkClick(e, "#contact")}
+              className="px-6 py-2 border border-gold text-gold text-[10px] tracking-widest uppercase hover:bg-gold hover:text-black transition-all duration-500"
+            >
+              CONTACTEZ-NOUS
+            </a>
+          </div>
         </div>
 
         {/* Mobile Menu Toggle */}

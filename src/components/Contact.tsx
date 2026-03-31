@@ -8,8 +8,10 @@ const Contact = () => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
+    firstname: "",
     email: "",
     phone: "",
+    configuration: "",
     message: "",
   });
   const [loading, setLoading] = useState(false);
@@ -19,9 +21,18 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // 1. Save to DB
       await db.insertLead(formData);
+      
+      // 2. Prepare WhatsApp Message
+      const message = `Bonjour Benak Hills, je suis intéressé par votre projet.\n\nNom: ${formData.firstname || ""} ${formData.name}\nEmail: ${formData.email}\nTel: ${formData.phone}\nConfiguration: ${formData.configuration || "Non spécifiée"}\nMessage: ${formData.message}`;
+      const encoded = encodeURIComponent(message);
+      const waUrl = `https://wa.me/212786360767?text=${encoded}`;
+      
+      // 3. Show success and Redirect
       setSuccess(true);
-      setFormData({ name: "", email: "", phone: "", message: "" });
+      window.open(waUrl, '_blank');
+      setFormData({ name: "", firstname: "", email: "", phone: "", configuration: "", message: "" });
     } catch (error) {
       console.error(error);
       alert("Erreur lors de l'envoi du message.");
@@ -79,12 +90,7 @@ const Contact = () => {
             ))}
           </div>
 
-          {/* Social Icons Placeholder */}
-          <div className="flex gap-4 pt-10 border-t border-white/5 opacity-50">
-             <div className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white/40 hover:text-gold hover:border-gold cursor-pointer transition-all">FB</div>
-             <div className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white/40 hover:text-gold hover:border-gold cursor-pointer transition-all">IG</div>
-             <div className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white/40 hover:text-gold hover:border-gold cursor-pointer transition-all">WA</div>
-          </div>
+          {/* Social Icons removed as requested */}
         </motion.div>
 
         <motion.div
@@ -111,17 +117,43 @@ const Contact = () => {
             <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-md p-10 md:p-14 border border-white/10 rounded-sm shadow-2xl relative z-10 space-y-8">
                <div className="space-y-6">
                  <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-2 group">
-                       <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">{t("contact.name")}</label>
-                       <input 
-                         required 
-                         type="text" 
-                         value={formData.name}
-                         onChange={e => setFormData({...formData, name: e.target.value})}
-                         className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
-                         placeholder="Jean Dupont"
-                       />
-                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2 group">
+                           <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">Prénom</label>
+                           <input 
+                              type="text" 
+                              value={formData.firstname}
+                              onChange={e => setFormData({...formData, firstname: e.target.value})}
+                              className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
+                              placeholder="Votre prénom"
+                           />
+                        </div>
+                        <div className="space-y-2 group">
+                           <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">{t("contact.name")}</label>
+                           <input 
+                              required 
+                              type="text" 
+                              value={formData.name}
+                              onChange={e => setFormData({...formData, name: e.target.value})}
+                              className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
+                              placeholder="Votre nom"
+                           />
+                        </div>
+                     </div>
+                     <div className="space-y-2 group">
+                        <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">Modèle souhaité</label>
+                        <select 
+                           value={formData.configuration}
+                           onChange={e => setFormData({...formData, configuration: e.target.value})}
+                           className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm"
+                        >
+                           <option value="" className="bg-zinc-900">Choisir un modèle</option>
+                           <option value="5 Chambres" className="bg-zinc-900 text-white">Config 5 Chambres</option>
+                           <option value="4 Chambres Master" className="bg-zinc-900 text-white">4 Chambres Master</option>
+                           <option value="3 Chambres Master" className="bg-zinc-900 text-white">3 Chambres Master</option>
+                           <option value="4 Chambres Étage" className="bg-zinc-900 text-white">4 Chambres Étage</option>
+                        </select>
+                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2 group">
                            <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">{t("contact.emailLabel")}</label>
