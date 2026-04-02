@@ -7,6 +7,7 @@ import { db } from "../lib/db";
 const VillaModels = () => {
   const { lang, t } = useLanguage();
   const [active, setActive] = useState(0);
+  const [subIndex, setSubIndex] = useState(0); 
   const [models, setModels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,20 +49,31 @@ const VillaModels = () => {
       }
     };
     loadModels();
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
-    if (models.length <= 1) return;
+    if (models.length === 0) return;
     const interval = setInterval(() => {
-      setActive((prev) => (prev + 1) % models.length);
-    }, 12000);
+      const currentModel = models[active];
+      const validImgList = (currentModel.images || []).filter((img: string) => img && img.length > 0);
+      const imageCount = validImgList.length || 1;
+      
+      setSubIndex((prev) => {
+        if (prev + 1 < imageCount) {
+          return prev + 1;
+        } else {
+          setActive((a) => (a + 1) % models.length);
+          return 0;
+        }
+      });
+    }, 4000); // 4 seconds per image
     return () => clearInterval(interval);
-  }, [models.length]);
+  }, [models, active]);
 
   if (loading) return (
     <div className="py-40 flex flex-col items-center justify-center gap-6 bg-zinc-950">
       <div className="w-16 h-16 border-2 border-gold/20 border-t-gold rounded-full animate-spin" />
-      <div className="text-gold animate-pulse tracking-[0.5em] text-[10px] uppercase font-body">Architecture en cours...</div>
+      <div className="text-gold animate-pulse tracking-[0.5em] text-[10px] uppercase font-body">{t("models.loading")}</div>
     </div>
   );
   if (!models.length) return null;
@@ -71,8 +83,7 @@ const VillaModels = () => {
   const desc = lang === "en" ? (current.description_en || current.description || current.desc) : (current.description || current.desc);
   
   const validImages = (current.images || []).filter((img: string) => img && img.length > 0);
-  const planImage = validImages[0];
-  const otherImages = validImages.slice(1);
+  const activeImage = validImages[subIndex] || validImages[0];
 
   return (
     <section id="modeles" className="py-24 md:py-40 bg-zinc-950 relative overflow-hidden">
@@ -104,7 +115,7 @@ const VillaModels = () => {
                {models.map((m: any, i: number) => (
                   <button
                     key={m.id || i}
-                    onClick={() => setActive(i)}
+                    onClick={() => { setActive(i); setSubIndex(0); }}
                     className={`group relative w-14 h-14 flex items-center justify-center transition-all duration-700 rounded-full border-2 ${
                       active === i 
                         ? "bg-gold text-black border-gold scale-110 shadow-[0_0_30px_rgba(212,175,55,0.3)]" 
@@ -127,17 +138,17 @@ const VillaModels = () => {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={active}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -40 }}
+            key={`${active}-${subIndex}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="grid lg:grid-cols-12 gap-16 items-start"
           >
             <div className="lg:col-span-5 space-y-12">
                <div className="space-y-8">
                   <div className="inline-block px-4 py-2 bg-white/5 border border-white/10 rounded-sm">
-                    <span className="text-gold text-[10px] tracking-widest uppercase font-body">Architecture & Plans</span>
+                    <span className="text-gold text-[10px] tracking-widest uppercase font-body">{t("models.plans")}</span>
                   </div>
                   <h3 className="text-3xl md:text-5xl font-heading text-white leading-tight">
                     {title}
@@ -154,14 +165,14 @@ const VillaModels = () => {
                      rel="noopener noreferrer"
                      className="flex-1 py-5 flex items-center justify-center gap-4 bg-white text-black hover:bg-gold transition-all duration-500 tracking-[0.3em] font-body text-[10px] uppercase group shadow-2xl"
                    >
-                     <span>{lang === "fr" ? "Brochure PDF" : "Brochure PDF"}</span>
+                     <span>{t("models.brochure")}</span>
                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                    </a>
                    <a
                      href="#contact"
                      className="flex-1 py-5 flex items-center justify-center gap-4 border border-zinc-800 text-white hover:border-gold hover:text-gold transition-all duration-500 tracking-[0.3em] font-body text-[10px] uppercase"
                    >
-                     {lang === "fr" ? "Discuter du projet" : "Enquire Now"}
+                     {t("models.discuss")}
                    </a>
                 </div>
             </div>
@@ -169,27 +180,35 @@ const VillaModels = () => {
             <div className="lg:col-span-7 space-y-6">
                 <div className="rounded-sm overflow-hidden border border-zinc-900 shadow-2xl relative aspect-[16/10] group">
                    <img 
-                     src={planImage || validImages[0]} 
-                     alt="Plan" 
+                     src={activeImage} 
+                     alt="Villa View" 
                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
                    />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-                   <div className="absolute bottom-8 left-8">
+                   <div className="absolute bottom-8 left-8 flex items-center gap-4">
                      <span className="text-gold text-[10px] tracking-[0.4em] font-body uppercase bg-black/80 px-4 py-2 border border-gold/20 backdrop-blur-sm">
-                       Plan Architectural
+                        {subIndex === 0 ? t("models.viewPlan") : `${t("models.viewDetail")} ${subIndex}`}
                      </span>
+                     <div className="flex gap-2">
+                        {validImages.map((_: string, idx: number) => (
+                           <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${idx === subIndex ? "bg-gold w-4 shadow-[0_0_8px_rgba(212,175,55,0.6)]" : "bg-white/20"}`} />
+                        ))}
+                     </div>
                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 h-40 md:h-56">
-                    {otherImages.map((img: string, idx: number) => (
-                      <div key={idx} className="rounded-sm overflow-hidden border border-zinc-900 shadow-xl group cursor-pointer relative h-full">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-24 md:h-32">
+                    {validImages.map((img: string, idx: number) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setSubIndex(idx)}
+                        className={`rounded-sm overflow-hidden border transition-all duration-500 cursor-pointer relative ${idx === subIndex ? "border-gold scale-105 z-10" : "border-zinc-900 opacity-40 hover:opacity-100"}`}
+                      >
                          <img 
                             src={img} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                            alt={`Detail ${idx + 1}`}
+                            className="w-full h-full object-cover" 
+                            alt={`Thumbnail ${idx + 1}`}
                          />
-                         <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/10 transition-colors duration-500" />
                       </div>
                     ))}
                 </div>

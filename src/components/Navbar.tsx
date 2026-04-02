@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const { lang, setLang, t } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,11 +30,23 @@ const Navbar = () => {
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
-    const target = document.querySelector(href);
-    if (target) {
-      const offset = 80;
-      const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
-      window.scrollTo({ top: targetPosition, behavior: "smooth" });
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const target = document.querySelector(href);
+        if (target) {
+          const offset = 80;
+          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top: targetPosition, behavior: "smooth" });
+        }
+      }, 100);
+    } else {
+      const target = document.querySelector(href);
+      if (target) {
+        const offset = 80;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: targetPosition, behavior: "smooth" });
+      }
     }
     setIsMobileMenuOpen(false);
   };
@@ -42,18 +58,13 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <a href="#accueil" className="flex items-center gap-3 group" onClick={(e) => handleLinkClick(e, "#accueil")}>
-          <div className="relative">
-            <svg width="45" height="45" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gold group-hover:scale-110 transition-transform duration-500">
-              <path d="M20 80V40L40 20V80H20ZM45 80V10L65 30V80H45ZM70 80V50L90 70V80H70Z" fill="currentColor" />
-              <rect x="10" y="80" width="80" height="2" fill="currentColor" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-white text-xl font-heading tracking-[0.2em] leading-none">BENAK</span>
-            <span className="text-white text-sm font-heading tracking-[0.3em] opacity-80 mt-1">HILLS</span>
-          </div>
-        </a>
+        <Link to="/" className="flex items-center group">
+          <img 
+            src="/logo_benak.png" 
+            alt="Benak Hills Logo" 
+            className="h-20 w-auto sm:h-24 md:h-32 object-contain transition-all duration-500 group-hover:scale-105"
+          />
+        </Link>
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-8">
@@ -70,20 +81,28 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-6 ml-4">
-            <button
-              onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-              className="flex items-center gap-2 text-[10px] font-body tracking-[0.2em] text-white/50 hover:text-gold transition-all"
-            >
-              <Globe className="w-3 h-3" />
-              {lang.toUpperCase()}
-            </button>
+          <div className="flex items-center gap-8 ml-8 h-8 border-l border-white/10 pl-8">
+            <div className="flex items-center gap-3 bg-white/5 p-1 rounded-full border border-white/5">
+                <button
+                  onClick={() => setLang("fr")}
+                  className={`px-3 py-1 rounded-full text-[9px] font-body tracking-widest transition-all ${lang === 'fr' ? 'bg-gold text-black shadow-lg shadow-gold/20' : 'text-white/40 hover:text-white'}`}
+                >
+                  FR
+                </button>
+                <button
+                  onClick={() => setLang("en")}
+                  className={`px-3 py-1 rounded-full text-[9px] font-body tracking-widest transition-all ${lang === 'en' ? 'bg-gold text-black shadow-lg shadow-gold/20' : 'text-white/40 hover:text-white'}`}
+                >
+                  EN
+                </button>
+            </div>
+            
             <a 
               href="#contact" 
               onClick={(e) => handleLinkClick(e, "#contact")}
-              className="px-6 py-2 border border-gold text-gold text-[10px] tracking-widest uppercase hover:bg-gold hover:text-black transition-all duration-500"
+              className="px-6 py-2 border border-gold text-gold text-[10px] tracking-widest uppercase hover:bg-gold hover:text-black transition-all duration-500 shadow-2xl shadow-gold/5"
             >
-              CONTACTEZ-NOUS
+              {t("nav.contact")}
             </a>
           </div>
         </div>
@@ -97,31 +116,83 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu Backdrop */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-background/98 backdrop-blur-xl border-t border-white/5 py-10 px-6 shadow-2xl animate-fade-in animate-slide-down">
-          <div className="flex flex-col gap-6 items-center">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => handleLinkClick(e, link.href)}
-                className="text-sm tracking-[0.25em] font-body text-foreground/80 hover:text-gold transition-colors uppercase py-2"
-              >
-                {link.name}
-              </a>
-            ))}
-            <div className="w-12 h-px bg-white/10 my-4" />
-            <button
-               onClick={() => { setLang(lang === "fr" ? "en" : "fr"); setIsMobileMenuOpen(false); }}
-               className="flex items-center gap-3 text-xs font-body tracking-wider text-gold py-4"
-            >
-               <Globe className="w-4 h-4" />
-               {lang === "fr" ? "Switch to English" : "Passer en Français"}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="lg:hidden fixed inset-0 z-[60] bg-black flex flex-col"
+          >
+            {/* Mobile Header (within the drawer) */}
+            <div className="flex items-center justify-between px-6 py-8 border-b border-white/5 bg-black/50 backdrop-blur-md">
+               <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="h-10">
+                  <img src="/logo_benak.png" alt="Logo" className="h-full w-auto object-contain" />
+               </Link>
+               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-white hover:text-gold transition-colors">
+                  <X className="w-8 h-8" />
+               </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-12 flex flex-col gap-8 items-center bg-[url('/assets/pattern.png')] bg-repeat opacity-100">
+               {navLinks.map((link, i) => (
+                 <motion.a
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: 0.1 + i * 0.05 }}
+                   key={link.name}
+                   href={link.href}
+                   onClick={(e) => handleLinkClick(e, link.href)}
+                   className="text-2xl tracking-[0.3em] font-heading text-white hover:text-gold transition-all duration-500 uppercase italic lowercase group flex items-center gap-4"
+                 >
+                   <span className="w-0 group-hover:w-8 h-px bg-gold transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                   {link.name}
+                 </motion.a>
+               ))}
+               
+               <div className="w-20 h-px bg-gold/20 my-8" />
+               
+               <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex gap-4 p-1 bg-white/5 border border-white/10 rounded-full px-6 py-2"
+               >
+                   <button
+                      onClick={() => { setLang("fr"); setIsMobileMenuOpen(false); }}
+                      className={`px-4 py-2 text-xs font-body tracking-widest rounded-full transition-all ${lang === 'fr' ? 'bg-gold text-black shadow-lg shadow-gold/20 font-bold' : 'text-white/40'}`}
+                   >
+                      FR
+                   </button>
+                   <div className="w-px h-4 bg-white/10 self-center" />
+                   <button
+                      onClick={() => { setLang("en"); setIsMobileMenuOpen(false); }}
+                      className={`px-4 py-2 text-xs font-body tracking-widest rounded-full transition-all ${lang === 'en' ? 'bg-gold text-black shadow-lg shadow-gold/20 font-bold' : 'text-white/40'}`}
+                   >
+                      EN
+                   </button>
+               </motion.div>
+
+               <motion.a 
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.7 }}
+                 href="#contact" 
+                 onClick={(e) => handleLinkClick(e, "#contact")}
+                 className="mt-12 px-12 py-5 bg-gold text-black text-xs tracking-[0.4em] uppercase font-body font-bold shadow-2xl shadow-gold/20 flex items-center gap-4"
+               >
+                 {t("nav.contact")}
+               </motion.a>
+            </div>
+            
+            {/* Footer decoration */}
+            <div className="h-2 bg-gradient-to-r from-transparent via-gold to-transparent opacity-30" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </nav>
   );
 };

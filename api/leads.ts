@@ -2,8 +2,8 @@ import { neon } from '@neondatabase/serverless';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const getDb = () => {
-  const url = process.env.NEON_DATABASE_URL;
-  if (!url) throw new Error('NEON_DATABASE_URL is not set');
+  const url = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+  if (!url) throw new Error('DATABASE_URL is not set');
   return neon(url);
 };
 
@@ -19,19 +19,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // GET /api/leads — list all leads
     if (req.method === 'GET') {
+      await sql`
+        CREATE TABLE IF NOT EXISTS leads (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          budget TEXT,
+          configuration TEXT,
+          message TEXT,
+          status TEXT DEFAULT 'nouveau',
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW(),
+          notes TEXT
+        );
+      `;
       const rows = await sql`SELECT * FROM leads ORDER BY created_at DESC`;
       return res.status(200).json(rows);
     }
 
     // POST /api/leads — insert a new lead
     if (req.method === 'POST') {
-      const { name, email, phone, budget, configuration, message, status } = req.body;
+      const { name, firstname, email, phone, budget, configuration, message, status } = req.body;
       if (!name || !email || !phone) {
         return res.status(400).json({ error: 'name, email, phone are required' });
       }
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS leads (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          budget TEXT,
+          configuration TEXT,
+          message TEXT,
+          status TEXT DEFAULT 'nouveau',
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW(),
+          notes TEXT
+        );
+      `;
+
+      const fullName = firstname ? `${firstname} ${name}` : name;
+
       const rows = await sql`
         INSERT INTO leads (name, email, phone, budget, configuration, message, status, created_at, updated_at)
-        VALUES (${name}, ${email}, ${phone}, ${budget || ''}, ${configuration || ''}, ${message || ''}, ${status || 'nouveau'}, NOW(), NOW())
+        VALUES (${fullName}, ${email}, ${phone}, ${budget || ''}, ${configuration || ''}, ${message || ''}, ${status || 'nouveau'}, NOW(), NOW())
         RETURNING *
       `;
       return res.status(201).json(rows[0]);

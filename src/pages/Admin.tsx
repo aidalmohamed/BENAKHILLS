@@ -1,117 +1,107 @@
 import { useState, useEffect } from "react";
-import { db } from "../lib/db";
+import { useLanguage } from "../contexts/LanguageContext";
 import { 
-  LayoutDashboard, 
-  Tag, 
-  Image as ImageIcon, 
-  Home, 
+  Users, 
+  MessageCircle, 
+  Trash2, 
   LogOut, 
   Plus, 
-  Trash2, 
   Save, 
+  Trash, 
   Edit, 
-  ChevronRight, 
-  Upload,
+  Upload, 
+  Image as ImageIcon, 
+  Layout, 
+  Tag, 
+  RefreshCw,
+  Search,
   CheckCircle,
-  AlertCircle,
-  MessageCircle
+  Clock,
+  ArrowRight
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { db } from "../lib/db";
 
-// --- HELPERS ---
-const compressImage = (file: File, maxWidth = 1200, quality = 0.7): Promise<string> => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let width = img.width;
-        let height = img.height;
+// Image compression utility
+async function compressImage(base64Str: string): Promise<string> {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1200;
+            let width = img.width;
+            let height = img.height;
 
-        if (width > maxWidth) {
-          height = (maxWidth / width) * height;
-          width = maxWidth;
-        }
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+            }
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
-      };
-    };
-  });
-};
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7)); // 0.7 quality bypasses Vercel limit
+        };
+    });
+}
 
-const fileToBase64 = async (file: File): Promise<string> => {
-  if (file.type.startsWith("image/")) {
-    return compressImage(file);
-  }
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
-};
+async function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            const result = reader.result as string;
+            if (file.size > 800000) { // Compress if > 800KB
+                const compressed = await compressImage(result);
+                resolve(compressed);
+            } else {
+                resolve(result);
+            }
+        };
+    });
+}
 
 const AdminPanel = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("leads");
-  const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: "" });
   
   const [leads, setLeads] = useState<any[]>([]);
   const [offers, setOffers] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [carousel, setCarousel] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
-  
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "admin@benak-hills.com";
-    const adminPass = import.meta.env.VITE_ADMIN_PASSWORD || "Azerty2026";
-    
-    if (loginForm.email === adminEmail && loginForm.password === adminPass) {
-      setIsAuthenticated(true);
-      localStorage.setItem("admin_auth", "true");
-    } else {
-      alert("Invalid credentials");
-    }
-  };
+  const stats = [
+    { label: "Leads", count: leads.length, icon: Users, color: "text-gold" },
+    { label: "Modèles", count: models.length, icon: Layout, color: "text-blue-400" },
+    { label: "Offres", count: offers.length, icon: Tag, color: "text-emerald-400" },
+    { label: "Images", count: gallery.length, icon: ImageIcon, color: "text-purple-400" },
+  ];
 
   useEffect(() => {
-    if (localStorage.getItem("admin_auth") === "true") {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem("admin_auth");
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchData();
-    }
-  }, [isAuthenticated, activeTab]);
+    if (isAuthenticated) fetchData();
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (activeTab === "leads") setLeads(await db.getLeads());
-      if (activeTab === "offers") setOffers(await db.getOffers());
-      if (activeTab === "gallery") setGallery(await db.getGallery());
-      if (activeTab === "carousel") setCarousel(await db.getCarousel());
-      if (activeTab === "models") {
-         const res = await fetch("/api/models");
-         if (res.ok) setModels(await res.json());
-      }
+      const [l, o, m, g, c] = await Promise.all([
+        db.getLeads(),
+        db.getOffers(),
+        db.getModels(),
+        db.getGallery(),
+        db.getCarousel()
+      ]);
+      setLeads(l || []);
+      setOffers(o || []);
+      setModels(m || []);
+      setGallery(g || []);
+      setCarousel(c || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -119,156 +109,187 @@ const AdminPanel = () => {
     }
   };
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email === import.meta.env.VITE_ADMIN_EMAIL && password === import.meta.env.VITE_ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+    } else {
+      alert("Identifiants incorrects");
+    }
+  };
+
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6 bg-gradient-to-br from-black via-zinc-900 to-black">
-        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-10 rounded-sm shadow-2xl">
-          <div className="mb-10 text-center">
-            <h1 className="text-2xl font-heading text-white tracking-widest uppercase mb-2">BENAK HILLS</h1>
-            <p className="text-gold/60 text-[10px] tracking-[0.3em] font-body uppercase">Administration</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] text-zinc-500 uppercase tracking-widest font-body ml-1">Email</label>
-              <input 
-                type="email" 
-                required
-                className="w-full bg-black border border-zinc-700 text-white p-4 text-sm outline-none focus:border-gold transition-all"
-                value={loginForm.email}
-                onChange={e => setLoginForm({...loginForm, email: e.target.value})}
-              />
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 bg-[url('/assets/pattern.png')] bg-repeat">
+         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md bg-zinc-900 border border-gold/20 p-10 shadow-2xl space-y-8">
+            <div className="text-center space-y-2">
+               <h1 className="text-white font-heading text-3xl tracking-widest uppercase italic">Benak Hills</h1>
+               <p className="text-gold text-[10px] tracking-[0.4em] uppercase opacity-60">Administration</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] text-zinc-500 uppercase tracking-widest font-body ml-1">Mot de passe</label>
-              <input 
-                type="password" 
-                required
-                className="w-full bg-black border border-zinc-700 text-white p-4 text-sm outline-none focus:border-gold transition-all"
-                value={loginForm.password}
-                onChange={e => setLoginForm({...loginForm, password: e.target.value})}
-              />
-            </div>
-            <button type="submit" className="w-full py-4 bg-gold text-black font-body text-[10px] tracking-[0.4em] uppercase hover:bg-gold-light transition-all shadow-xl shadow-gold/10">
-              Connexion
-            </button>
-          </form>
-        </div>
+            <form onSubmit={handleLogin} className="space-y-6">
+               <div className="space-y-2">
+                  <label className="text-[10px] text-zinc-500 uppercase tracking-widest">Email</label>
+                  <input type="email" required className="w-full bg-black border border-zinc-800 p-4 text-white text-sm outline-none focus:border-gold transition-colors" value={email} onChange={e => setEmail(e.target.value)} />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] text-zinc-500 uppercase tracking-widest">Mot de passe</label>
+                  <input type="password" required className="w-full bg-black border border-zinc-800 p-4 text-white text-sm outline-none focus:border-gold transition-colors" value={password} onChange={e => setPassword(e.target.value)} />
+               </div>
+               <button type="submit" className="w-full bg-gold text-black py-4 font-body text-[10px] tracking-[0.4em] uppercase hover:bg-gold-light transition-all flex items-center justify-center gap-3">
+                  Connexion <ArrowRight size={14} />
+               </button>
+            </form>
+         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-300 flex">
-      <aside className="w-64 border-r border-zinc-800 bg-zinc-900/50 backdrop-blur-xl flex flex-col pt-10 sticky top-0 h-screen">
-        <div className="px-8 mb-16">
-          <h2 className="text-xl font-heading text-white tracking-widest">ADMIN</h2>
-          <div className="h-px w-8 bg-gold mt-2" />
-        </div>
-        <nav className="flex-1 space-y-1">
-          {[
-            { id: "leads", label: "Prospects", icon: <LayoutDashboard size={18} /> },
-            { id: "offers", label: "Offres", icon: <Tag size={18} /> },
-            { id: "models", label: "Models", icon: <Home size={18} /> },
-            { id: "gallery", label: "Galerie", icon: <ImageIcon size={18} /> },
-            { id: "carousel", label: "Carousel Hero", icon: <ImageIcon size={18} /> },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-4 px-8 py-4 text-xs font-body tracking-widest uppercase transition-all border-r-2 ${
-                activeTab === tab.id ? "bg-zinc-800 text-gold border-gold" : "text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-white/5"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-        <div className="p-8">
-           <button onClick={handleLogout} className="flex items-center gap-4 text-[10px] tracking-widest uppercase text-red-500 hover:text-red-400 font-body">
-             <LogOut size={16} /> Déconnexion
-           </button>
-        </div>
-      </aside>
-
-      <main className="flex-1 p-12 overflow-y-auto">
-        <header className="flex justify-between items-end mb-12 border-b border-zinc-800 pb-10">
-          <div>
-            <span className="text-gold/60 text-[10px] tracking-[0.3em] font-body uppercase mb-2 block">Benak Hills Marrakech</span>
-            <h1 className="text-4xl font-heading text-white uppercase italic">{activeTab}</h1>
+    <div className="min-h-screen bg-[#050505] text-white flex">
+       {/* Sidebar */}
+       <aside className="w-72 bg-zinc-950 border-r border-white/5 flex flex-col fixed h-full z-20">
+          <div className="p-8 border-b border-white/5 bg-black/40 space-y-6">
+             <img 
+               src="/logo_benak.png" 
+               alt="Logo" 
+               className="h-12 w-auto object-contain"
+               style={{ mixBlendMode: 'screen', filter: 'contrast(1.5) brightness(1.1)' }}
+             />
+             <div>
+                <h2 className="text-xl font-heading tracking-widest italic gold-text-gradient">BENAK HILLS</h2>
+                <span className="text-[8px] tracking-[0.5em] text-zinc-500 uppercase block mt-1">Console v2.0</span>
+             </div>
           </div>
-          {status.type && (
-            <div className={`p-4 rounded-sm flex items-center gap-4 shadow-2xl animate-fade-in ${
-              status.type === 'success' ? 'bg-green-500/10 border border-green-500/30 text-green-500' : 'bg-red-500/10 border border-red-500/30 text-red-500'
-            }`}>
-              {status.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-              <span className="text-xs font-body tracking-wider">{status.message}</span>
-            </div>
-          )}
-        </header>
 
-        {activeTab === "leads" && <LeadsManagement leads={leads} refresh={fetchData} loading={loading} />}
-        {activeTab === "offers" && <OffersManagement initialOffers={offers} refresh={fetchData} />}
-        {activeTab === "models" && <ModelsManagement initialModels={models} refresh={fetchData} />}
-        {activeTab === "gallery" && <GalleryManagement initialGallery={gallery} refresh={fetchData} />}
-        {activeTab === "carousel" && <CarouselManagement initialCarousel={carousel} refresh={fetchData} />}
-      </main>
+          <nav className="p-6 flex-1 space-y-2 overflow-y-auto">
+             {[
+               { id: 'leads', icon: Users, label: 'Prospects (Leads)' },
+               { id: 'carousel', icon: RefreshCw, label: 'Carousel Hero' },
+               { id: 'offers', icon: Tag, label: 'Offres' },
+               { id: 'models', icon: Layout, label: 'Modèles' },
+               { id: 'gallery', icon: ImageIcon, label: 'Galerie' },
+             ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-sm transition-all group ${activeTab === tab.id ? 'bg-gold text-black' : 'text-zinc-500 hover:bg-white/5 hover:text-white'}`}
+                >
+                  <tab.icon size={18} className={activeTab === tab.id ? 'text-black' : 'group-hover:text-gold'} />
+                  <span className="text-[10px] tracking-[0.2em] uppercase font-bold">{tab.label}</span>
+                  {activeTab === tab.id && <motion.div layoutId="active" className="ml-auto w-1 h-4 bg-black rounded-full" />}
+                </button>
+             ))}
+          </nav>
+
+          <div className="p-6 mt-auto border-t border-white/5">
+             <button onClick={() => setIsAuthenticated(false)} className="w-full flex items-center gap-4 p-4 text-zinc-600 hover:text-red-500 transition-colors uppercase text-[10px] tracking-widest font-bold">
+                <LogOut size={18} /> Déconnexion
+             </button>
+          </div>
+       </aside>
+
+       {/* Main */}
+       <main className="flex-1 ml-72">
+          <header className="h-24 border-b border-white/5 flex items-center justify-between px-10 sticky top-0 bg-[#050505]/80 backdrop-blur-xl z-10">
+             <div className="flex items-center gap-10">
+                {stats.map((s, i) => (
+                   <div key={i} className="flex flex-col">
+                      <span className="text-[8px] text-zinc-500 uppercase tracking-[0.2em]">{s.label}</span>
+                      <div className="flex items-center gap-2">
+                         <s.icon size={12} className={s.color} />
+                         <span className="text-lg font-heading text-white">{s.count}</span>
+                      </div>
+                   </div>
+                ))}
+             </div>
+             <button onClick={fetchData} className="p-3 bg-zinc-900 border border-white/5 text-zinc-400 hover:text-gold transition-colors rounded-full">
+                <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+             </button>
+          </header>
+
+          <div className="p-10 max-w-7xl">
+             <AnimatePresence mode="wait">
+                <motion.div
+                   key={activeTab}
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   exit={{ opacity: 0, y: -10 }}
+                   transition={{ duration: 0.3 }}
+                >
+                   {activeTab === 'leads' && <LeadsList leads={leads} refresh={fetchData} />}
+                   {activeTab === 'offers' && <OffersManagement initialOffers={offers} refresh={fetchData} />}
+                   {activeTab === 'models' && <ModelsManagement initialModels={models} refresh={fetchData} />}
+                   {activeTab === 'gallery' && <GalleryManagement initialGallery={gallery} refresh={fetchData} />}
+                   {activeTab === 'carousel' && <CarouselManagement initialCarousel={carousel} refresh={fetchData} />}
+                </motion.div>
+             </AnimatePresence>
+          </div>
+       </main>
     </div>
   );
 };
 
-// --- SUB COMPONENTS ---
+const LeadsList = ({ leads, refresh }: any) => {
+  const deleteLead = async (id: string) => {
+    if (!confirm("Supprimer ce prospect?")) return;
+    await fetch(`/api/leads?id=${id}`, { method: 'DELETE' });
+    refresh();
+  };
 
-const LeadsManagement = ({ leads, refresh, loading }: any) => {
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-body tracking-widest uppercase text-zinc-500">{leads.length} Leads trouvés</h3>
-      </div>
-      <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-black/40 text-[10px] tracking-[0.4em] uppercase text-zinc-500 border-b border-zinc-800">
-              <th className="px-8 py-5">Date</th>
-              <th className="px-8 py-5">Nom</th>
-              <th className="px-8 py-5">Contact</th>
-              <th className="px-8 py-5">Message</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm font-body">
-            {leads.map((lead: any) => (
-              <tr key={lead.id} className="border-b border-zinc-800/50 hover:bg-white/5 transition-colors">
-                <td className="px-8 py-6 text-zinc-500 text-xs">{new Date(lead.created_at).toLocaleDateString()}</td>
-                <td className="px-8 py-6 text-white font-heading tracking-wide uppercase">{lead.name}</td>
-                <td className="px-8 py-6">
-                   <div className="text-zinc-300">{lead.email}</div>
-                   <div className="text-gold/70 text-xs font-mono">{lead.phone}</div>
-                </td>
-                <td className="px-8 py-6 text-zinc-400 text-xs italic">
-                  <div className="mb-2">{lead.message || "---"}</div>
-                  <div className="flex gap-2">
-                    <a 
-                      href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`} 
-                      target="_blank" 
-                      className="flex items-center gap-1 text-[8px] bg-green-500/20 text-green-500 px-3 py-1 rounded-full hover:bg-green-500 hover:text-white transition-all uppercase tracking-widest"
-                    >
-                      <MessageCircle size={10} /> WhatsApp
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {loading && <div className="p-20 text-center text-gold animate-pulse tracking-[0.5em] text-xs">CHARGEMENT...</div>}
-        {!loading && leads.length === 0 && <div className="p-20 text-center text-zinc-600 tracking-widest text-xs">AUCUNE DEMANDE</div>}
-      </div>
+       <div className="flex items-center justify-between">
+          <h3 className="text-xl font-heading tracking-widest uppercase">Demandes de Contact</h3>
+       </div>
+       <div className="grid gap-4">
+          {leads.map((lead: any) => (
+             <div key={lead.id} className="bg-zinc-900 border border-white/5 p-6 rounded-sm flex items-center justify-between hover:border-gold/30 transition-all">
+                <div className="grid md:grid-cols-4 gap-10 flex-1">
+                   <div>
+                      <span className="text-[8px] text-zinc-500 uppercase tracking-widest block mb-1">Prospect</span>
+                      <p className="font-heading text-sm text-white uppercase">{lead.firstname} {lead.name}</p>
+                   </div>
+                   <div>
+                      <span className="text-[8px] text-zinc-500 uppercase tracking-widest block mb-1">Configuration</span>
+                      <p className="text-zinc-300 text-xs font-body italic">{lead.configuration || "Non spécifié"}</p>
+                   </div>
+                   <div>
+                      <span className="text-[8px] text-zinc-500 uppercase tracking-widest block mb-1">Contact</span>
+                      <p className="text-zinc-400 text-[10px] font-body">{lead.email}</p>
+                      <p className="text-gold text-[10px] font-body">{lead.phone}</p>
+                   </div>
+                   <div>
+                      <span className="text-[8px] text-zinc-500 uppercase tracking-widest block mb-1">Message</span>
+                      <p className="text-zinc-500 text-[10px] line-clamp-2 italic">"{lead.message}"</p>
+                   </div>
+                </div>
+                <div className="flex gap-4 ml-10">
+                   <a
+                     href={`https://wa.me/${lead.phone?.replace(/\+/g, '').replace(/ /g, '')}`}
+                     target="_blank"
+                     className="w-10 h-10 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 flex items-center justify-center rounded-full hover:bg-[#25D366] hover:text-white transition-all"
+                   >
+                     <MessageCircle size={18} />
+                   </a>
+                   <button onClick={() => deleteLead(lead.id)} className="w-10 h-10 bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center rounded-full hover:bg-red-500 hover:text-white transition-all">
+                      <Trash2 size={18} />
+                   </button>
+                </div>
+             </div>
+          ))}
+       </div>
     </div>
   );
-}
+};
 
 const OffersManagement = ({ initialOffers, refresh }: any) => {
   const [editing, setEditing] = useState<any>(null);
+
+  useEffect(() => {
+    if (editing) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [editing]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -282,19 +303,23 @@ const OffersManagement = ({ initialOffers, refresh }: any) => {
       setEditing(null);
       refresh();
     } catch (err) {
-      alert("Sauvegarde impossible pour les offres");
+      alert("Erreur lors de la sauvegarde");
     }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const base64s = await Promise.all(Array.from(files).map(fileToBase64));
-    setEditing({...editing, images: [...(editing.images || []), ...base64s]});
+    const newImgs = [...(editing.images || [])];
+    for (const file of Array.from(files)) {
+      const base64 = await fileToBase64(file);
+      newImgs.push(base64);
+    }
+    setEditing({...editing, images: newImgs});
   };
 
   const deleteOffer = async (id: string) => {
-    if (!confirm("Supprimer?")) return;
+    if (!confirm("Supprimer cette offre?")) return;
     await fetch(`/api/offers?id=${id}`, { method: 'DELETE' });
     refresh();
   };
@@ -310,15 +335,28 @@ const OffersManagement = ({ initialOffers, refresh }: any) => {
 
       {editing && (
         <form onSubmit={handleSave} className="bg-zinc-900 p-10 border border-gold/30 shadow-2xl space-y-8 animate-slide-up">
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 bg-black/40 p-6 rounded-sm border border-zinc-800">
             <div className="space-y-4">
-              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre (FR)</label>
-              <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
+              <label className="text-[10px] text-gold uppercase tracking-[0.2em] block font-bold">Contenu Français</label>
+              <div className="space-y-4">
+                <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre</label>
+                <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
+                <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description</label>
+                <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold min-h-[120px]" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} />
+              </div>
             </div>
             <div className="space-y-4">
-              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre (EN)</label>
-              <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title_en} onChange={e => setEditing({...editing, title_en: e.target.value})} />
+              <label className="text-[10px] text-blue-400 uppercase tracking-[0.2em] block font-bold">English Content</label>
+              <div className="space-y-4">
+                <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Title</label>
+                <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-blue-400" value={editing.title_en} onChange={e => setEditing({...editing, title_en: e.target.value})} />
+                <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description</label>
+                <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-blue-400 min-h-[120px]" value={editing.description_en} onChange={e => setEditing({...editing, description_en: e.target.value})} />
+              </div>
             </div>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Prix</label>
               <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.price} onChange={e => setEditing({...editing, price: e.target.value})} />
@@ -334,17 +372,6 @@ const OffersManagement = ({ initialOffers, refresh }: any) => {
             <div className="space-y-4">
                <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Type</label>
                <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.type} onChange={e => setEditing({...editing, type: e.target.value})} />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description (FR)</label>
-              <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold min-h-[100px]" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} />
-            </div>
-            <div className="space-y-4">
-              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description (EN)</label>
-              <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold min-h-[100px]" value={editing.description_en} onChange={e => setEditing({...editing, description_en: e.target.value})} />
             </div>
           </div>
 
@@ -379,7 +406,7 @@ const OffersManagement = ({ initialOffers, refresh }: any) => {
         </form>
       )}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
          {initialOffers.map((offer: any) => (
            <div key={offer.id} className="bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-6 group hover:border-gold/30 transition-all">
              <div className="aspect-video bg-black overflow-hidden relative">
@@ -446,30 +473,30 @@ const ModelsManagement = ({ initialModels, refresh }: any) => {
 
       {editing && (
         <form onSubmit={handleSave} className="bg-zinc-900 p-10 border border-gold/30 shadow-2xl space-y-8 animate-slide-up">
-           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div className="space-y-4">
-                 <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">ID (ex: 01)</label>
-                 <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.display_id} onChange={e => setEditing({...editing, display_id: e.target.value})} />
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre (FR)</label>
-                 <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre (EN)</label>
-                 <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title_en} onChange={e => setEditing({...editing, title_en: e.target.value})} />
-              </div>
+           <div className="space-y-4">
+              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">ID (ex: 01)</label>
+              <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.display_id} onChange={e => setEditing({...editing, display_id: e.target.value})} />
            </div>
-           
-           <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                 <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description (FR)</label>
-                 <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold min-h-[100px]" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} />
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description (EN)</label>
-                 <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold min-h-[100px]" value={editing.description_en} onChange={e => setEditing({...editing, description_en: e.target.value})} />
-              </div>
+
+           <div className="grid md:grid-cols-2 gap-8 bg-black/40 p-6 rounded-sm border border-zinc-800">
+               <div className="space-y-4">
+                  <label className="text-[10px] text-gold uppercase tracking-[0.2em] block font-bold">Contenu Français</label>
+                  <div className="space-y-4">
+                     <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre</label>
+                     <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
+                     <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description</label>
+                     <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold min-h-[120px]" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} />
+                  </div>
+               </div>
+               <div className="space-y-4">
+                  <label className="text-[10px] text-blue-400 uppercase tracking-[0.2em] block font-bold">English Content</label>
+                  <div className="space-y-4">
+                     <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Title</label>
+                     <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-blue-400" value={editing.title_en} onChange={e => setEditing({...editing, title_en: e.target.value})} />
+                     <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Description</label>
+                     <textarea className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-blue-400 min-h-[120px]" value={editing.description_en} onChange={e => setEditing({...editing, description_en: e.target.value})} />
+                  </div>
+               </div>
            </div>
 
            <div className="space-y-4">
@@ -508,7 +535,7 @@ const ModelsManagement = ({ initialModels, refresh }: any) => {
                  <div className="w-12 h-12 bg-zinc-800 border border-gold/30 flex items-center justify-center text-gold font-heading text-xl">{m.display_id}</div>
                  <div>
                     <h4 className="text-white font-heading text-lg tracking-widest uppercase">{m.title}</h4>
-                    <p className="text-zinc-600 text-[10px] tracking-widest uppercase">{m.description?.substring(0, 100)}...</p>
+                    <p className="text-zinc-500 text-[10px] tracking-widest uppercase line-clamp-1">{m.description?.substring(0, 100)}...</p>
                  </div>
               </div>
               <div className="flex gap-6">
@@ -550,116 +577,98 @@ const GalleryManagement = ({ initialGallery, refresh }: any) => {
                <input type="file" multiple accept="image/*" className="hidden" onChange={handleUpload} />
             </label>
          </div>
-         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {initialGallery.map((item: any) => (
-               <div key={item.id} className="aspect-square bg-zinc-900 border border-zinc-800 relative group overflow-hidden">
-                  <img src={item.src} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                     <button onClick={() => deleteItem(item.id)} className="text-red-500 p-2 hover:scale-125 transition-transform">
-                        <Trash2 size={20} />
-                     </button>
-                  </div>
+               <div key={item.id} className="aspect-square bg-zinc-900 border border-zinc-800 relative group overflow-hidden rounded-sm">
+                  <img src={item.src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <button onClick={() => deleteItem(item.id)} className="absolute top-2 right-2 bg-red-500 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full shadow-lg">
+                     <Trash2 size={14} />
+                  </button>
                </div>
             ))}
          </div>
       </div>
    );
-};
+}
 
 const CarouselManagement = ({ initialCarousel, refresh }: any) => {
-  const [editing, setEditing] = useState<any>(null);
+   const [editing, setEditing] = useState<any>(null);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const base64 = await fileToBase64(file);
-    setEditing((prev: any) => ({ ...prev, src: base64 }));
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const resp = await fetch("/api/carousel", {
-        method: editing.id ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editing)
-      });
-      if (!resp.ok) throw new Error("Save error");
-      setEditing(null);
-      refresh();
-    } catch (err) {
-      alert("Sauvegarde impossible");
-    }
-  };
-
-  const deleteItem = async (id: string) => {
-    if (!confirm("Supprimer?")) return;
-    await fetch(`/api/carousel?id=${id}`, { method: 'DELETE' });
-    refresh();
-  };
-
-  return (
-    <div className="space-y-12">
-       <button onClick={() => setEditing({ title: "", subtitle: "", src: "" })} className="px-8 py-4 bg-gold text-black text-[10px] tracking-widest uppercase font-body hover:bg-gold-light transition-all flex items-center gap-3">
-          <Plus size={18} /> Ajouter une image hero
+   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0];
+     if (!file) return;
+     const base64 = await fileToBase64(file);
+     setEditing((prev: any) => ({ ...prev, src: base64 }));
+   };
+ 
+   const handleSave = async (e: React.FormEvent) => {
+     e.preventDefault();
+     await fetch("/api/carousel", {
+       method: editing.id ? 'PUT' : 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify(editing)
+     });
+     setEditing(null);
+     refresh();
+   };
+ 
+   const deleteItem = async (id: string) => {
+     await fetch(`/api/carousel?id=${id}`, { method: 'DELETE' });
+     refresh();
+   };
+ 
+   return (
+     <div className="space-y-10">
+       <button 
+         onClick={() => setEditing({ title: "", subtitle: "", src: "" })}
+         className="px-6 py-3 bg-zinc-800 text-white text-[10px] tracking-widest uppercase hover:bg-gold hover:text-black transition-all flex items-center gap-3"
+       >
+         <Plus size={16} /> Nouveau Slide
        </button>
-
+ 
        {editing && (
-         <form onSubmit={handleSave} className="bg-zinc-900 p-10 border border-gold/30 shadow-2xl space-y-8 animate-slide-up">
-           <div className="grid md:grid-cols-2 gap-8">
-             <div className="space-y-4">
-               <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre</label>
-               <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
-             </div>
-             <div className="space-y-4">
-               <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Sous-titre</label>
-               <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.subtitle} onChange={e => setEditing({...editing, subtitle: e.target.value})} />
-             </div>
-           </div>
-           <div className="space-y-4">
-             <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Image Hero</label>
-             <div className="aspect-[21/9] bg-black border border-zinc-800 relative group overflow-hidden max-w-2xl">
-               {editing.src ? <img src={editing.src} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-800 italic">No image selected</div>}
+         <form onSubmit={handleSave} className="bg-zinc-900 p-10 border border-gold/30 shadow-2xl space-y-8 animate-slide-up max-w-2xl">
+            <div className="aspect-video bg-black border border-zinc-800 relative group overflow-hidden mb-6">
+               {editing.src ? <img src={editing.src} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-zinc-700 italic">Aucun visuel</div>}
                <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                 <Upload size={30} className="text-gold" />
-                 <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                  <Upload size={24} className="text-gold" />
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
                </label>
-             </div>
-           </div>
-           <div className="flex gap-4">
-             <button type="submit" className="flex-1 py-4 bg-gold text-black font-body text-[10px] tracking-[0.4em] uppercase hover:bg-gold-light transition-all flex items-center justify-center gap-3">
-               <Save size={16} /> Sauvegarder
-             </button>
-             <button type="button" onClick={() => setEditing(null)} className="flex-1 py-4 bg-zinc-800 text-white font-body text-[10px] tracking-[0.4em] uppercase hover:bg-zinc-700 transition-all">
-               Annuler
-             </button>
-           </div>
+            </div>
+            <div className="space-y-4">
+              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Titre (H1)</label>
+              <input required className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
+              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block">Sous-titre</label>
+              <input className="w-full bg-black border border-zinc-700 p-4 text-white text-sm outline-none focus:border-gold" value={editing.subtitle} onChange={e => setEditing({...editing, subtitle: e.target.value})} />
+            </div>
+            <div className="flex gap-4">
+              <button type="submit" className="flex-1 py-4 bg-gold text-black font-body text-[10px] tracking-[0.4em] uppercase hover:bg-gold-light transition-all">Enregistrer</button>
+              <button type="button" onClick={() => setEditing(null)} className="flex-1 py-4 bg-zinc-800 text-white font-body text-[10px] tracking-[0.4em] uppercase hover:bg-zinc-700 transition-all">Annuler</button>
+            </div>
          </form>
        )}
-
-       <div className="grid md:grid-cols-2 gap-8">
+ 
+       <div className="grid md:grid-cols-3 gap-6">
           {initialCarousel.map((item: any) => (
-             <div key={item.id} className="aspect-[21/9] bg-zinc-900 border border-zinc-800 relative group overflow-hidden">
-                <img src={item.src} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-between px-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <div className="text-white">
-                      <p className="text-gold text-[10px] uppercase tracking-widest">{item.subtitle}</p>
-                      <h4 className="font-heading text-xl uppercase italic">{item.title}</h4>
+             <div key={item.id} className="bg-zinc-900 border border-zinc-800 p-4 space-y-4 group">
+                <div className="aspect-video overflow-hidden border border-white/5 relative">
+                   <img src={item.src} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-3">
+                         <button onClick={() => setEditing(item)} className="p-2 bg-white text-black rounded-full hover:bg-gold transition-colors"><Edit size={16} /></button>
+                         <button onClick={() => deleteItem(item.id)} className="p-2 bg-white text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-colors"><Trash2 size={16} /></button>
+                      </div>
                    </div>
-                   <div className="flex gap-4">
-                      <button onClick={() => setEditing(item)} className="text-gold p-3 bg-black/40 rounded-full hover:bg-gold hover:text-black transition-all">
-                        <Edit size={18} />
-                      </button>
-                      <button onClick={() => deleteItem(item.id)} className="text-red-500 p-3 bg-black/40 rounded-full hover:bg-red-500 hover:text-white transition-all">
-                        <Trash2 size={18} />
-                      </button>
-                   </div>
+                </div>
+                <div className="px-2">
+                   <p className="text-[10px] text-gold tracking-widest uppercase font-bold">{item.title}</p>
+                   <p className="text-[8px] text-zinc-500 tracking-widest uppercase truncate">{item.subtitle}</p>
                 </div>
              </div>
           ))}
        </div>
-    </div>
-  );
-};
+     </div>
+   );
+}
 
 export default AdminPanel;

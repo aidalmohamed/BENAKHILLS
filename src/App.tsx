@@ -6,12 +6,15 @@ import Hero from "./components/Hero";
 import Concept from "./components/Concept";
 import FeaturedOffers from "./components/FeaturedOffers";
 import VillaModels from "./components/VillaModels";
+import Location from "./components/Location";
 import Gallery from "./components/Gallery";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import AdminPanel from "./pages/Admin";
 
 import WhatsAppButton from "./components/WhatsAppButton";
+
+import Legal from "./pages/Legal";
 
 function AppContent() {
   const { lang } = useLanguage();
@@ -28,6 +31,7 @@ function AppContent() {
         <Concept />
         <FeaturedOffers />
         <VillaModels />
+        <Location />
         <Gallery />
         <Contact />
       </main>
@@ -44,6 +48,7 @@ function App() {
         <Routes>
           <Route path="/" element={<AppContent />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/legal" element={<Legal />} />
         </Routes>
       </LanguageProvider>
     </Router>

@@ -32,14 +32,14 @@ const FeaturedOffers = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
            <div className="space-y-4">
               <span className="text-gold text-[10px] tracking-[0.4em] font-body uppercase border-b border-gold/30 pb-2 inline-block">
-                Opportunités Immobilières
+                {t("offers.label")}
               </span>
               <h2 className="text-4xl md:text-6xl font-heading text-white leading-tight">
-                Offres <span className="gold-text-gradient">Exclusives</span>
+                {t("offers.title").split(" ")[0]} <span className="gold-text-gradient">{t("offers.title").split(" ")[1]}</span>
               </h2>
            </div>
            <p className="text-zinc-500 font-body max-w-sm text-sm">
-             Découvrez nos dernières villas et terrains disponibles au cœur du domaine Benak Hills.
+             {t("offers.desc")}
            </p>
         </div>
 
@@ -69,9 +69,6 @@ const FeaturedOffers = () => {
                    ) : (
                      <div className="w-full h-full bg-zinc-800 flex items-center justify-center italic text-zinc-600">No Image Available</div>
                    )}
-                   <div className="absolute top-6 right-6 bg-black/80 backdrop-blur-md text-gold px-4 py-2 border border-gold/30 font-heading text-sm shadow-xl">
-                      {offer.price}
-                   </div>
                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-60" />
                 </div>
 
@@ -95,7 +92,7 @@ const FeaturedOffers = () => {
                    <div className="flex items-center gap-6 pt-6 border-t border-white/5 mt-auto">
                       <div className="flex items-center gap-2">
                          <BedDouble className="w-4 h-4 text-gold/60" />
-                         <span className="text-zinc-400 text-xs font-body">{offer.rooms} Chambres</span>
+                         <span className="text-zinc-400 text-xs font-body">{offer.rooms} {t("offers.rooms")}</span>
                       </div>
                       <div className="flex items-center gap-2">
                          <Maximize className="w-4 h-4 text-gold/60" />
@@ -114,7 +111,7 @@ const FeaturedOffers = () => {
                         }}
                         className="w-full py-4 border border-zinc-800 text-zinc-400 hover:text-gold hover:border-gold text-[10px] tracking-[0.4em] uppercase font-body transition-all duration-500"
                       >
-                        En savoir plus
+                        {t("offers.more")}
                       </button>
                    </div>
                 </div>

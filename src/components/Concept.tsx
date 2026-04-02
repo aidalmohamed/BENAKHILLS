@@ -6,10 +6,10 @@ const Concept = () => {
   const { t } = useLanguage();
 
   const features = [
-    { icon: <Maximize className="w-6 h-6 text-gold" />, title: "240 m²", desc: "Surface habitable optimisée" },
-    { icon: <ShieldCheck className="w-6 h-6 text-gold" />, title: "300 m²+", desc: "Parcelle de terrain titrée" },
-    { icon: <Layout className="w-6 h-6 text-gold" />, title: "Modulable", desc: "4 plans architecturaux au choix" },
-    { icon: <CheckCircle2 className="w-6 h-6 text-gold" />, title: "Sécurité", desc: "Domaine privé & gardienné" },
+    { icon: <Maximize className="w-6 h-6 text-gold" />, title: t("concept.feat1.title"), desc: t("concept.feat1.desc") },
+    { icon: <ShieldCheck className="w-6 h-6 text-gold" />, title: t("concept.feat2.title"), desc: t("concept.feat2.desc") },
+    { icon: <Layout className="w-6 h-6 text-gold" />, title: t("concept.feat3.title"), desc: t("concept.feat3.desc") },
+    { icon: <CheckCircle2 className="w-6 h-6 text-gold" />, title: t("concept.feat4.title"), desc: t("concept.feat4.desc") },
   ];
 
   return (
@@ -70,19 +70,13 @@ const Concept = () => {
           <div className="absolute inset-0 border border-gold/30 translate-x-6 translate-y-6 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform duration-700" />
           <div className="absolute inset-0 overflow-hidden shadow-2xl rounded-sm">
             <img
-              src="/assets/15.png"
+              src="/assets/villa_signature.jpg"
               alt="Villa Signature Benak Hills"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
 
-          <div className="absolute bottom-10 left-10 p-8 bg-black/80 backdrop-blur-md border border-gold/40 shadow-2xl skew-x-3 group-hover:skew-x-0 transition-all duration-500 max-w-[280px]">
-             <div className="-skew-x-3 group-hover:skew-x-0 transition-transform">
-                <span className="text-[10px] text-gold tracking-widest font-body block uppercase opacity-70 mb-2">Signature Style</span>
-                <p className="text-white/90 text-sm font-heading italic">"L'harmonie d'une architecture contemporaine au cœur de Marrakech."</p>
-             </div>
-          </div>
         </motion.div>
       </div>
     </section>

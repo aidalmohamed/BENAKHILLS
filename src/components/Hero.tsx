@@ -18,7 +18,6 @@ const Hero = () => {
         if (data && data.length > 0) {
           setCarouselItems(data);
         } else {
-          // Fallback
           setCarouselItems(Array.from({ length: 5 }, (_, i) => ({
             src: `/assets/${i + 1}.png`,
             title: "BENAK",
@@ -38,7 +37,7 @@ const Hero = () => {
     if (carouselItems.length === 0) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % carouselItems.length);
-    }, 10000); // 10 seconds per slide for high-end feel
+    }, 7000);
     return () => clearInterval(timer);
   }, [carouselItems.length]);
 
@@ -58,8 +57,7 @@ const Hero = () => {
   const current = carouselItems[currentIndex];
 
   return (
-    <section id="accueil" className="relative h-screen w-full overflow-hidden bg-black">
-      {/* Background Slideshow */}
+    <section id="accueil" className="relative min-h-screen w-full overflow-hidden bg-black flex items-center justify-center py-24">
       <div className="absolute inset-0">
         <AnimatePresence mode="wait">
           <motion.div
@@ -67,7 +65,7 @@ const Hero = () => {
             initial={{ opacity: 0, scale: 1.2 }}
             animate={{ opacity: 1, scale: 1.05 }}
             exit={{ opacity: 0, scale: 1 }}
-            transition={{ duration: 4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 3, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
             <img
@@ -80,96 +78,76 @@ const Hero = () => {
         </AnimatePresence>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 text-center">
         <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          key="hero-content"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="space-y-6"
+          className="space-y-8"
         >
-          <div className="flex flex-col items-center gap-4">
-             <span className="text-gold text-[10px] md:text-xs tracking-[0.8em] font-body uppercase bg-black/40 backdrop-blur-md px-10 py-3 border border-gold/20 rounded-full shadow-2xl">
-               {current.subtitle || t("hero.subtitle")}
-             </span>
+          <div className="space-y-4">
+             <h1 className="text-[clamp(1.5rem,8vw,4.5rem)] font-heading font-normal tracking-[0.15em] text-white select-none drop-shadow-2xl leading-[1.2] whitespace-nowrap uppercase mb-0">
+                {t("hero.title")}
+             </h1>
+             <p className="text-[clamp(1rem,4vw,1.5rem)] font-heading italic text-white/90 drop-shadow-lg font-light tracking-wide mt-2">
+                {t("hero.subtitle")}
+             </p>
           </div>
 
-          <h1 className="text-6xl md:text-9xl lg:text-[12rem] font-heading font-normal tracking-[0.2em] text-white select-none">
-            {current.title === "BENAK" ? (
-              <>
-                <span className="block opacity-90 drop-shadow-2xl">BENAK</span>
-                <span className="block gold-text-gradient font-heading -mt-4 drop-shadow-2xl">HILLS</span>
-              </>
-            ) : (
-              <span className="block italic uppercase">{current.title}</span>
-            )}
-          </h1>
-
-          <p className="text-lg md:text-xl font-heading italic text-white/70 max-w-2xl mx-auto drop-shadow-lg">
-            {t("hero.desc")}
+          <p className="text-sm md:text-lg font-body text-white/70 max-w-3xl mx-auto drop-shadow-md leading-[1.8] pt-4 font-light">
+             {t("hero.desc")}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-16">
             <motion.button
-              whileHover={{ scale: 1.05, letterSpacing: "0.5em" }}
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(212, 175, 55, 1)", color: "black" }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => document.getElementById("concept")?.scrollIntoView({ behavior: "smooth" })}
-              className="group border border-gold bg-gold/10 hover:bg-gold text-gold hover:text-black px-12 py-5 text-[10px] tracking-[0.4em] font-body flex items-center gap-4 transition-all duration-700 rounded-sm shadow-2xl"
+              onClick={() => {
+                const target = document.getElementById("concept");
+                if (target) {
+                    const offset = 80;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({ top: targetPosition, behavior: "smooth" });
+                }
+              }}
+              className="border border-gold text-gold px-14 py-5 text-[10px] tracking-[0.5em] font-body uppercase flex items-center gap-4 transition-all duration-700 rounded-sm shadow-2xl backdrop-blur-sm"
             >
               {t("hero.cta")}
-              <ArrowDown className="w-4 h-4 animate-bounce group-hover:translate-y-1 transition-transform" />
+              <ChevronRight className="w-4 h-4" />
             </motion.button>
           </div>
         </motion.div>
+      </div>
 
-        {/* Carousel Controls */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col gap-4 hidden lg:flex">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
           {carouselItems.slice(0, 5).map((_: any, i: number) => (
              <button
                key={i}
                onClick={() => setCurrentIndex(i)}
-               className={`h-1.5 transition-all duration-500 rounded-full ${i === currentIndex % 5 ? "w-12 bg-gold" : "w-6 bg-white/20"}`}
+               className={`h-[1px] transition-all duration-700 ${i === currentIndex % 5 ? "w-16 bg-gold" : "w-8 bg-white/20 hover:bg-white/40"}`}
              />
           ))}
-        </div>
-
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-8 lg:hidden">
-            <button onClick={prev} className="p-3 border border-white/20 rounded-full text-white/70 hover:text-gold hover:border-gold transition-all backdrop-blur-sm bg-black/20">
-                <ChevronLeft className="w-6 h-6" />
-            </button>
-            <div className="flex gap-2">
-                {carouselItems.slice(0, 3).map((_: any, i: number) => (
-                    <div key={i} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentIndex % carouselItems.length ? "bg-gold scale-125" : "bg-white/30"}`} />
-                ))}
-            </div>
-            <button onClick={next} className="p-3 border border-white/20 rounded-full text-white/70 hover:text-gold hover:border-gold transition-all backdrop-blur-sm bg-black/20">
-                <ChevronRight className="w-6 h-6" />
-            </button>
-        </div>
-
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 hidden md:block"
-        >
-          <div className="flex flex-col items-center gap-3 text-white/30 group cursor-pointer" onClick={() => document.getElementById("concept")?.scrollIntoView({ behavior: "smooth" })}>
-            <span className="text-[10px] tracking-widest font-body uppercase group-hover:text-gold transition-colors">Scroll</span>
-            <ArrowDown className="w-4 h-4 group-hover:text-gold transition-colors" />
-          </div>
-        </motion.div>
       </div>
 
-      {/* Slide Index Progress Mobile */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-white/5 md:hidden">
-         <motion.div 
-           key={currentIndex}
-           initial={{ width: 0 }}
-           animate={{ width: "100%" }}
-           transition={{ duration: 8, ease: "linear" }}
-           className="h-full bg-gold"
-         />
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-8 lg:hidden">
+          <button onClick={prev} className="p-3 border border-white/20 rounded-full text-white/70 hover:text-gold hover:border-gold transition-all backdrop-blur-sm bg-black/20">
+              <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button onClick={next} className="p-3 border border-white/20 rounded-full text-white/70 hover:text-gold hover:border-gold transition-all backdrop-blur-sm bg-black/20">
+              <ChevronRight className="w-4 h-4" />
+          </button>
       </div>
+
+      <motion.div
+        animate={{ y: [0, 10, 0] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 hidden lg:block"
+      >
+        <div className="flex flex-col items-center gap-3 text-white/20 group cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={() => document.getElementById("concept")?.scrollIntoView({ behavior: "smooth" })}>
+          <ArrowDown className="w-4 h-4" />
+        </div>
+      </motion.div>
     </section>
   );
 };
