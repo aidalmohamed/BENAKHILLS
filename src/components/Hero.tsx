@@ -73,7 +73,7 @@ const Hero = () => {
               alt={current.title || "Villas de Luxe"}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-zinc-950" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-zinc-950" />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -86,16 +86,19 @@ const Hero = () => {
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="space-y-8"
         >
-          <div className="space-y-4">
-             <h1 className="text-[clamp(1.5rem,8vw,4.5rem)] font-heading font-normal tracking-[0.15em] text-white select-none drop-shadow-2xl leading-[1.2] whitespace-nowrap uppercase mb-0">
+          <div className="space-y-2">
+             <h1 className="text-[clamp(3.5rem,8vw,4.5rem)] font-heading font-normal tracking-[0.15em] text-white select-none drop-shadow-2xl leading-[1.2] whitespace-nowrap uppercase">
                 {t("hero.title")}
              </h1>
-             <p className="text-[clamp(1rem,4vw,1.5rem)] font-heading italic text-white/90 drop-shadow-lg font-light tracking-wide mt-2">
+             <h1 className="text-[clamp(3.5rem,8vw,4.5rem)] font-heading font-normal tracking-[0.15em] text-[#dd9f23] select-none drop-shadow-2xl leading-[1.2] whitespace-nowrap uppercase">
+                {t("hero.title-2")}
+             </h1>
+             <p className="text-[clamp(1.7rem,4vw,1.5rem)] font-heading italic text-white/90 drop-shadow-lg font-light tracking-wide mt-2">
                 {t("hero.subtitle")}
              </p>
           </div>
 
-          <p className="text-sm md:text-lg font-body text-white/70 max-w-3xl mx-auto drop-shadow-md leading-[1.8] pt-4 font-light">
+          <p className="text-md md:text-lg font-body text-white/70 max-w-3xl mx-auto drop-shadow-md leading-[1.8] pt-4 font-light">
              {t("hero.desc")}
           </p>
 
@@ -120,25 +123,7 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
-          {carouselItems.slice(0, 5).map((_: any, i: number) => (
-             <button
-               key={i}
-               onClick={() => setCurrentIndex(i)}
-               className={`h-[1px] transition-all duration-700 ${i === currentIndex % 5 ? "w-16 bg-gold" : "w-8 bg-white/20 hover:bg-white/40"}`}
-             />
-          ))}
-      </div>
-
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-8 lg:hidden">
-          <button onClick={prev} className="p-3 border border-white/20 rounded-full text-white/70 hover:text-gold hover:border-gold transition-all backdrop-blur-sm bg-black/20">
-              <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button onClick={next} className="p-3 border border-white/20 rounded-full text-white/70 hover:text-gold hover:border-gold transition-all backdrop-blur-sm bg-black/20">
-              <ChevronRight className="w-4 h-4" />
-          </button>
-      </div>
-
+      
       <motion.div
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}

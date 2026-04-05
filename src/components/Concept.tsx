@@ -6,14 +6,46 @@ const Concept = () => {
   const { t } = useLanguage();
 
   const features = [
-    { icon: <Maximize className="w-6 h-6 text-gold" />, title: t("concept.feat1.title"), desc: t("concept.feat1.desc") },
-    { icon: <ShieldCheck className="w-6 h-6 text-gold" />, title: t("concept.feat2.title"), desc: t("concept.feat2.desc") },
-    { icon: <Layout className="w-6 h-6 text-gold" />, title: t("concept.feat3.title"), desc: t("concept.feat3.desc") },
-    { icon: <CheckCircle2 className="w-6 h-6 text-gold" />, title: t("concept.feat4.title"), desc: t("concept.feat4.desc") },
+    {
+      icon: <Maximize className="w-6 h-6 text-gold" />,
+      title: t("concept.feat1.title"),
+      desc: t("concept.feat1.desc"),
+    },
+    {
+      icon: <ShieldCheck className="w-6 h-6 text-gold" />,
+      title: t("concept.feat2.title"),
+      desc: t("concept.feat2.desc"),
+    },
+    {
+      icon: <Layout className="w-6 h-6 text-gold" />,
+      title: t("concept.feat3.title"),
+      desc: t("concept.feat3.desc"),
+    },
+    {
+      icon: <CheckCircle2 className="w-6 h-6 text-gold" />,
+      title: t("concept.feat4.title"),
+      desc: t("concept.feat4.desc"),
+    },
   ];
-
+  const renderWithGold = (text: string) => {
+    const parts = text.split(/(<gold>.*?<\/gold>)/g);
+    return parts.map((part, i) => {
+      const match = part.match(/^<gold>(.*?)<\/gold>$/);
+      if (match) {
+        return (
+          <span key={i} className="text-gold font-semibold">
+            {match[1]}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
   return (
-    <section id="concept" className="py-24 md:py-32 bg-background relative overflow-hidden">
+    <section
+      id="concept"
+      className="py-24 md:py-32 bg-background relative overflow-hidden"
+    >
       <div className="absolute top-0 right-0 w-1/3 h-full bg-gold/5 blur-[120px] rounded-full -z-10 translate-x-1/2" />
 
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
@@ -24,8 +56,8 @@ const Concept = () => {
           transition={{ duration: 1 }}
           className="space-y-8"
         >
-          <div className="space-y-4">
-            <span className="text-gold text-xs tracking-[0.4em] font-body uppercase bg-gold/10 px-4 py-1.5 border-l-2 border-gold rounded-r-md">
+          <div className="space-y-4 flex flex-col items-center">
+            <span className="text-gold text-xs text-center tracking-[0.4em] font-body uppercase  px-4 py-1.5 rounded-r-md">
               {t("concept.label")}
             </span>
             <h2 className="text-4xl md:text-5xl font-heading leading-tight text-white/90">
@@ -33,12 +65,17 @@ const Concept = () => {
             </h2>
           </div>
 
-          <div className="space-y-6 text-foreground/70 leading-relaxed font-body">
-            <p className="border-l-2 border-gold pt-2 pl-6 italic text-lg text-white/80">
-              {t("concept.p1").replace("<gold>", "").replace("</gold>", "")}
+          <div className="space-y-6 text-foreground/70 leading-relaxed font-body border-b border-white/10 pb-8">
+            <p className="pt-2 text-lg text-white/80">
+              {renderWithGold(t("concept.p1"))}
             </p>
             <p>{t("concept.p2")}</p>
             <p>{t("concept.p3")}</p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500 pb-5">{t("concept.priceLabel")}</p>
+            <h1 className="capitalize text-xl">{renderWithGold(t("concept.priceFrom"))}</h1>
           </div>
 
           <div className="grid grid-cols-2 gap-6 pt-6">
@@ -51,9 +88,15 @@ const Concept = () => {
                 transition={{ duration: 0.6, delay: i * 0.1 }}
                 className="group p-6 bg-white/5 border border-white/5 rounded-sm hover:bg-gold/10 hover:border-gold/30 transition-all duration-500"
               >
-                <div className="mb-4 group-hover:scale-110 transition-transform">{feat.icon}</div>
-                <h4 className="text-white text-lg font-heading mb-1">{feat.title}</h4>
-                <p className="text-xs text-foreground/50 tracking-wider font-body">{feat.desc}</p>
+                <div className="mb-4 group-hover:scale-110 transition-transform">
+                  {feat.icon}
+                </div>
+                <h4 className="text-white text-lg font-heading mb-1">
+                  {feat.title}
+                </h4>
+                <p className="text-xs text-foreground/50 tracking-wider font-body">
+                  {feat.desc}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -76,7 +119,6 @@ const Concept = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
-
         </motion.div>
       </div>
     </section>

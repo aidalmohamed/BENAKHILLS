@@ -30,8 +30,8 @@ function AppContent() {
         <Hero />
         <Concept />
         <FeaturedOffers />
-        <VillaModels />
         <Location />
+        <VillaModels />
         <Gallery />
         <Contact />
       </main>

@@ -56,7 +56,7 @@ const Location = () => {
 
             <div className="pt-8">
               <motion.a
-                href="https://www.google.com/viewer/place?mid=/g/11z14lysvf"
+                href="https://maps.app.goo.gl/WbU6prfD8nKoUUcP8?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
