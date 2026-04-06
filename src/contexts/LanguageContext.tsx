@@ -28,7 +28,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.cta": "DÉCOUVRIR LE PROJET",
     // Concept
     "concept.label": "Le Concept",
-    "concept.title": "La Villa Signature 2",
+    "concept.title": "La Villa Signature",
     "concept.p1": "Superbe maison de <gold>240 m²</gold>, avec piscine privée, édifiée sur une parcelle de <gold>300 m²</gold> et plus, offrant un cadre de vie unique et prestigieux.",
     "concept.p2":
       "Avec des terrains titrés et entièrement viabilisés, votre acquisition est totalement sécurisée. Modulable selon vos envies avec 4 plans architecturaux distincts.",
@@ -43,7 +43,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "concept.feat3.title": "Modulable",
     "concept.feat3.desc": "4 plans architecturaux au choix",
     "concept.feat4.title": "Sécurité",
-    "concept.feat4.desc": "Domaine privé & gardienné",
+    "concept.feat4.desc": "Domaine privé & sécurisé",
     // Domain / Location
     "domain.label": "L'Emplacement",
     "domain.title": "Au Cœur de l'Atmosphère",

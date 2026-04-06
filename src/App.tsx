@@ -29,8 +29,8 @@ function AppContent() {
       <main>
         <Hero />
         <Concept />
-        <FeaturedOffers />
         <Location />
+        <FeaturedOffers />
         <VillaModels />
         <Gallery />
         <Contact />
