@@ -103,7 +103,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "contact.phone": "Téléphone",
     "contact.email": "Email",
     "contact.address": "Adresse",
-    "contact.addressValue": "Place la Liberté, Marrakech",
+    "contact.addressValue": "Visitez nos Bureaux",
     "contact.name": "Nom Complet",
     "contact.namePlaceholder": "Votre nom...",
     "contact.emailLabel": "Adresse Email",

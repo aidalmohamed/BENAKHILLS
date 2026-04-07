@@ -180,7 +180,7 @@ const Navbar = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.05 }}
-                  className="text-2xl tracking-[0.3em] text-white hover:text-gold uppercase italic"
+                  className="text-2xl tracking-[0.3em] text-white hover:text-gold italic font-heading"
                 >
                   {link.name}
                 </motion.a>

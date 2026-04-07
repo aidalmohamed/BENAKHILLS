@@ -79,7 +79,7 @@ const [isInteracting, setIsInteracting] = useState(false);
       display_id: "04",
       title:
         lang === "fr"
-          ? "Configuration 3 Chambres avec Master"
+          ? "Configuration 3 Chambres Master Room"
           : "3 Bedrooms with Master",
       desc:
         lang === "fr"
