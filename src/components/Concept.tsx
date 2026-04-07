@@ -56,7 +56,7 @@ const Concept = () => {
           transition={{ duration: 1 }}
           className="space-y-8"
         >
-          <div className="space-y-4 flex flex-col items-center">
+          <div className="space-y-4 flex flex-col items-center lg:items-start">
             <span className="text-gold text-xs text-center tracking-[0.4em] font-body uppercase  px-4 py-1.5 rounded-r-md">
               {t("concept.label")}
             </span>
