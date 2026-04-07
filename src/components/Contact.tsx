@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Send, CheckCircle } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Send,
+  CheckCircle,
+  Instagram,
+} from "lucide-react";
 import { db } from "../lib/db";
 
 const Contact = () => {
@@ -24,10 +31,24 @@ const Contact = () => {
       await db.insertLead(formData);
       const message = `Bonjour Benak Hills, je suis intéressé par votre projet.\n\nNom: ${formData.firstname || ""} ${formData.name}\nEmail: ${formData.email}\nTel: ${formData.phone}\nConfiguration: ${formData.configuration || "Non spécifiée"}\nMessage: ${formData.message}`;
       const encoded = encodeURIComponent(message);
+
+      // Send to email
+      const mailtoUrl = `mailto:contact@benakhills.com?subject=Nouvelle demande de contact&body=${encoded}`;
+      window.open(mailtoUrl, "_blank");
+
+      // Redirect to WhatsApp
       const waUrl = `https://wa.me/212786360767?text=${encoded}`;
-      setSuccess(true);
       window.location.href = waUrl;
-      setFormData({ name: "", firstname: "", email: "", phone: "", configuration: "", message: "" });
+
+      setSuccess(true);
+      setFormData({
+        name: "",
+        firstname: "",
+        email: "",
+        phone: "",
+        configuration: "",
+        message: "",
+      });
     } catch (error) {
       console.error(error);
       alert(t("contact.errorDesc"));
@@ -37,26 +58,50 @@ const Contact = () => {
   };
 
   const contactInfo = [
-    { icon: <Phone className="w-5 h-5" />, label: t("contact.phone"), value: "+212 786 360 767" },
-    { icon: <Mail className="w-5 h-5" />, label: t("contact.email"), value: "contact@benakhills.com" },
-    { icon: <MapPin className="w-5 h-5" />, label: t("contact.address"), value: t("contact.addressValue") },
+    {
+      icon: <Phone className="w-5 h-5" />,
+      label: t("contact.phone"),
+      value: "+212 786 360 767",
+      href: "tel:+212786360767",
+    },
+    {
+      icon: <Mail className="w-5 h-5" />,
+      label: t("contact.email"),
+      value: "contact@benakhills.com",
+      href: "mailto:contact@benakhills.com",
+    },
+    {
+      icon: <MapPin className="w-5 h-5" />,
+      label: t("contact.address"),
+      value: t("contact.addressValue"),
+      href: "https://share.google/elbIZ75zUtxJKx9L3",
+    },
+    {
+      icon: <Instagram className="w-5 h-5" />,
+      label: "Instagram",
+      value: "@benakhills",
+      href: "https://www.instagram.com/benakhills?igsh=OHduZjVmMzNtdHE4",
+    },
   ];
 
   return (
-    <section id="contact" className="py-24 md:py-32 bg-dark-surface relative overflow-hidden">
+    <section
+      id="contact"
+      className="py-24 md:py-32 bg-dark-surface relative overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20">
         <motion.div
-           initial={{ opacity: 0, x: -50 }}
-           whileInView={{ opacity: 1, x: 0 }}
-           viewport={{ once: true }}
-           transition={{ duration: 1 }}
-           className="space-y-12"
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+          className="space-y-12"
         >
           <div className="space-y-6">
             <span className="text-gold text-xs tracking-[0.4em] font-body uppercase border-b border-gold pb-1 leading-none inline-block">
               {t("contact.label")}
             </span>
-            <h2 className="text-4xl md:text-6xl font-heading text-white italic lowercase">
+            <h2 className="text-4xl md:text-6xl font-heading text-white italic capitalize">
               {t("contact.title")}
             </h2>
             <div className="w-20 h-px bg-gold/30" />
@@ -66,147 +111,212 @@ const Contact = () => {
           </div>
 
           <div className="space-y-8">
-            {contactInfo.map((info, i) => (
-              <div key={info.label} className="flex items-center gap-6 group">
+            {contactInfo.map((info) => (
+              <a
+                key={info.label}
+                href={info.href}
+                target={info.href.startsWith("http") ? "_blank" : undefined}
+                rel={
+                  info.href.startsWith("http")
+                    ? "noopener noreferrer"
+                    : undefined
+                }
+                className="flex items-center gap-6 group"
+              >
                 <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-background transition-all duration-500 rounded-full shadow-lg">
                   {info.icon}
                 </div>
                 <div>
-                   <p className="text-[10px] text-foreground/40 font-body uppercase tracking-[0.2em] mb-1">{info.label}</p>
-                   <p className="text-white/90 text-lg font-heading tracking-wide uppercase">{info.value}</p>
+                  <p className="text-[10px] text-foreground/40 font-body uppercase tracking-[0.2em] mb-1">
+                    {info.label}
+                  </p>
+                  <p className="text-white/90 text-lg font-body tracking-wide font-montserat">
+                    {info.value}
+                  </p>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </motion.div>
 
         <motion.div
-           initial={{ opacity: 0, x: 50 }}
-           whileInView={{ opacity: 1, x: 0 }}
-           viewport={{ once: true }}
-           transition={{ duration: 1.2 }}
-           className="relative"
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2 }}
+          className="relative"
         >
           {success ? (
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="h-full min-h-[500px] flex flex-col items-center justify-center text-center bg-white/5 border border-gold/40 rounded-sm p-12 shadow-2xl relative z-10"
             >
-               <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center text-gold mb-8 shadow-xl shadow-gold/20">
-                  <CheckCircle className="w-10 h-10" />
-               </div>
-               <h3 className="text-3xl font-heading text-white mb-4 italic uppercase">{t("contact.thankTitle")}</h3>
-               <p className="text-white/60 font-body">{t("contact.thankDesc")}</p>
-               <button onClick={() => setSuccess(false)} className="mt-10 text-[10px] text-gold font-body tracking-widest uppercase hover:text-white transition-colors underline underline-offset-8">
-                 {t("contact.another")}
-               </button>
+              <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center text-gold mb-8 shadow-xl shadow-gold/20">
+                <CheckCircle className="w-10 h-10" />
+              </div>
+              <h3 className="text-3xl font-heading text-white mb-4 italic uppercase">
+                {t("contact.thankTitle")}
+              </h3>
+              <p className="text-white/60 font-body">
+                {t("contact.thankDesc")}
+              </p>
+              <button
+                onClick={() => setSuccess(false)}
+                className="mt-10 text-[10px] text-gold font-body tracking-widest uppercase hover:text-white transition-colors underline underline-offset-8"
+              >
+                {t("contact.another")}
+              </button>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-md p-10 md:p-14 border border-white/10 rounded-sm shadow-2xl relative z-10 space-y-8">
-               <div className="space-y-6">
-                 <div className="grid grid-cols-1 gap-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div className="space-y-2 group">
-                            <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
-                              {t("contact.name")?.split(" ")[0]}
-                            </label>
-                            <input 
-                               type="text" 
-                               value={formData.firstname}
-                               onChange={e => setFormData({...formData, firstname: e.target.value})}
-                               className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
-                               placeholder={t("contact.namePlaceholder")}
-                            />
-                         </div>
-                         <div className="space-y-2 group">
-                            <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
-                              {t("contact.name")}
-                            </label>
-                            <input 
-                               required 
-                               type="text" 
-                               value={formData.name}
-                               onChange={e => setFormData({...formData, name: e.target.value})}
-                               className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
-                               placeholder={t("contact.namePlaceholder")}
-                            />
-                         </div>
-                      </div>
-                      <div className="space-y-2 group">
-                         <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
-                           {t("contact.config")}
-                         </label>
-                         <select 
-                            value={formData.configuration}
-                            onChange={e => setFormData({...formData, configuration: e.target.value})}
-                            className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm"
-                         >
-                            <option value="" className="bg-zinc-900">{t("contact.configSelect")}</option>
-                            <option value="5 Chambres" className="bg-zinc-900 text-white">Config 5 Chambres</option>
-                            <option value="4 Chambres Master" className="bg-zinc-900 text-white">4 Chambres Master</option>
-                            <option value="3 Chambres Master" className="bg-zinc-900 text-white">3 Chambres Master</option>
-                            <option value="4 Chambres Étage" className="bg-zinc-900 text-white">4 Chambres Étage</option>
-                         </select>
-                      </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div className="space-y-2 group">
-                            <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
-                              {t("contact.emailLabel")}
-                            </label>
-                            <input 
-                               required 
-                               type="email" 
-                               value={formData.email}
-                               onChange={e => setFormData({...formData, email: e.target.value})}
-                               className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
-                               placeholder="votre@email.com"
-                            />
-                         </div>
-                         <div className="space-y-2 group">
-                            <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
-                              {t("contact.phoneLabel")}
-                            </label>
-                            <input 
-                               required 
-                               type="tel" 
-                               value={formData.phone}
-                               onChange={e => setFormData({...formData, phone: e.target.value})}
-                               className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10" 
-                               placeholder={t("contact.phonePlaceholder")}
-                            />
-                         </div>
-                     </div>
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white/5 backdrop-blur-md p-10 md:p-14 border border-white/10 rounded-sm shadow-2xl relative z-10 space-y-8"
+            >
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
+                        {t("contact.name")?.split(" ")[0]}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.firstname}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            firstname: e.target.value,
+                          })
+                        }
+                        className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10"
+                        placeholder={t("contact.namePlaceholder")}
+                      />
+                    </div>
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
+                        {t("contact.name")}
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10"
+                        placeholder={t("contact.namePlaceholder")}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2 group">
-                     <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
-                       {t("contact.message")}
-                     </label>
-                     <textarea 
-                        rows={4} 
-                        value={formData.message}
-                        onChange={e => setFormData({...formData, message: e.target.value})}
-                        className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10 resize-none" 
-                        placeholder={t("contact.messagePlaceholder")}
-                     />
+                    <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
+                      {t("contact.config")}
+                    </label>
+                    <select
+                      value={formData.configuration}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          configuration: e.target.value,
+                        })
+                      }
+                      className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm"
+                    >
+                      <option value="" className="bg-zinc-900">
+                        {t("contact.configSelect")}
+                      </option>
+                      <option
+                        value="5 Chambres"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Config 5 Chambres
+                      </option>
+                      <option
+                        value="4 Chambres Master"
+                        className="bg-zinc-900 text-white"
+                      >
+                        4 Chambres Master
+                      </option>
+                      <option
+                        value="3 Chambres Master"
+                        className="bg-zinc-900 text-white"
+                      >
+                        3 Chambres Master
+                      </option>
+                      <option
+                        value="4 Chambres Étage"
+                        className="bg-zinc-900 text-white"
+                      >
+                        4 Chambres Étage
+                      </option>
+                    </select>
                   </div>
-               </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
+                        {t("contact.emailLabel")}
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10"
+                        placeholder="votre@email.com"
+                      />
+                    </div>
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
+                        {t("contact.phoneLabel")}
+                      </label>
+                      <input
+                        required
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                        className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10"
+                        placeholder={t("contact.phonePlaceholder")}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 group">
+                  <label className="text-[10px] text-foreground/40 font-body tracking-[0.2em] uppercase ml-1 group-focus-within:text-gold transition-colors">
+                    {t("contact.message")}
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
+                    className="w-full bg-black/40 border border-white/10 text-white p-4 focus:border-gold/60 focus:ring-0 outline-none rounded-sm transition-all font-body text-sm placeholder:text-white/10 resize-none"
+                    placeholder={t("contact.messagePlaceholder")}
+                  />
+                </div>
+              </div>
 
-               <button 
-                  disabled={loading}
-                  type="submit" 
-                  className="w-full py-5 bg-gold hover:bg-gold-light text-background font-body text-[10px] tracking-[0.4em] uppercase transition-all duration-500 shadow-xl shadow-gold/20 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 group overflow-hidden relative"
-               >
-                  <span className="relative z-10 flex items-center gap-2">
-                    {loading ? t("contact.sending") : t("contact.submit")}
-                    {!loading && <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
-                  </span>
-                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700" />
-               </button>
+              <button
+                disabled={loading}
+                type="submit"
+                className="w-full py-5 bg-gold hover:bg-gold-light text-background font-body text-[10px] tracking-[0.4em] uppercase transition-all duration-500 shadow-xl shadow-gold/20 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 group overflow-hidden relative"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {loading ? t("contact.sending") : t("contact.submit")}
+                  {!loading && (
+                    <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  )}
+                </span>
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700" />
+              </button>
             </form>
           )}
 
-          {/* Decorative Elements */}
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold/5 blur-[80px] -z-10" />
           <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gold/5 blur-[80px] -z-10" />
         </motion.div>
