@@ -28,7 +28,10 @@ const Navbar = () => {
     { name: t("nav.contact"), href: "#contact" },
   ];
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
     e.preventDefault();
 
     if (location.pathname !== "/") {
@@ -38,9 +41,7 @@ const Navbar = () => {
         if (target) {
           const offset = 80;
           const targetPosition =
-            target.getBoundingClientRect().top +
-            window.pageYOffset -
-            offset;
+            target.getBoundingClientRect().top + window.pageYOffset - offset;
           window.scrollTo({ top: targetPosition, behavior: "smooth" });
         }
       }, 100);
@@ -49,9 +50,7 @@ const Navbar = () => {
       if (target) {
         const offset = 80;
         const targetPosition =
-          target.getBoundingClientRect().top +
-          window.pageYOffset -
-          offset;
+          target.getBoundingClientRect().top + window.pageYOffset - offset;
         window.scrollTo({ top: targetPosition, behavior: "smooth" });
       }
     }
@@ -127,17 +126,29 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Mobile Toggle */}
-          <button
-            className="lg:hidden p-2 text-foreground/80 hover:text-gold"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+        
+          {/* Mobile Right Section */}
+          <div className="lg:hidden flex items-center gap-4">
+            {/* Language Switch */}
+            <button
+              onClick={() => setLang(lang === "en" ? "fr" : "en")}
+              className="text-[14px] tracking-widest text-white/70 hover:text-gold transition-colors"
+            >
+              {lang === "en" ? "EN" : "FR"}
+            </button>
+
+            {/* Hamburger */}
+            <button
+              className="p-2 text-foreground/80 hover:text-gold"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
         </div>
       </nav>
 

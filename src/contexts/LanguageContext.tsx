@@ -29,7 +29,8 @@ const translations: Record<Lang, Record<string, string>> = {
     // Concept
     "concept.label": "Le Concept",
     "concept.title": "La Villa Signature",
-    "concept.p1": "Superbe maison de <gold>240 m²</gold>, avec piscine privée, édifiée sur une parcelle de <gold>300 m²</gold> et plus, offrant un cadre de vie unique et prestigieux.",
+    "concept.p1":
+      "Superbe maison de <gold>240 m²</gold>, avec piscine privée, édifiée sur une parcelle de <gold>300 m²</gold> et plus, offrant un cadre de vie unique et prestigieux.",
     "concept.p2":
       "Avec des terrains titrés et entièrement viabilisés, votre acquisition est totalement sécurisée. Modulable selon vos envies avec 4 plans architecturaux distincts.",
     "concept.p3":
@@ -80,6 +81,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "models.02.title": "4 Chambres avec Master-room",
     "models.02.desc":
       "Cette seconde configuration permet toujours de bénéficier d'une suite au rez-de-chaussée, tout en offrant à l'étage trois chambres dont une superbe master room. Les volumes généreux créent un espace nuit élégant et accueillant.",
+    "models.03.title": "Configuration 4 Chambres",
+    "models.03.desc":
+      "Une configuration équilibrée avec 4 chambres, idéale pour une vie familiale confortable et fonctionnelle.",
+    "models.04.title": "Configuration 3 Chambres Master Room",
+    "models.04.desc":
+      "Une configuration optimisée avec 3 chambres incluant une master, parfaite pour un espace de vie moderne et élégant.",
     "models.plans": "Plans Architecturaux",
     "models.brochure": "Brochure PDF",
     "models.discuss": "Discuter du projet",
@@ -131,6 +138,21 @@ const translations: Record<Lang, Record<string, string>> = {
     "offers.more": "En savoir plus",
     "offers.desc":
       "Découvrez nos dernières villas et terrains disponibles au cœur du domaine Benak Hills.",
+    "offers.01.title": "5 Chambres",
+    "offers.01.desc":
+      "Configuration idéale pour les grandes familles avec des espaces généreux et une organisation optimale.",
+
+    "offers.02.title": "4 Chambres (Master Room)",
+    "offers.02.desc":
+      "4 chambres dont une master room au rez-de-chaussée, et 3 chambres à l'étage.",
+
+    "offers.03.title": "3 Chambres (Master Room)",
+    "offers.03.desc":
+      "3 chambres dont une master room, avec un espace de vie optimisé et moderne.",
+
+    "offers.04.title": "4 Chambres Étage",
+    "offers.04.desc":
+      "4 chambres à l’étage sans master room, parfait pour une distribution classique.",
     // Footer
     "footer.desc":
       "L'élégance architecturale au service de votre sérénité. L'immobilier de prestige à Marrakech redéfini. Réservez dès maintenant votre future villa.",
@@ -150,7 +172,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.contact": "CONTACT US",
     // Hero
     "hero.subtitle": "Your villa in total serenity",
-    "hero.title": "BENAK HILLS",
+    "hero.title": "BENAK",
+    "hero.title-2": "HILLS",
     "hero.desc":
       "Discover elegant and modular villas designed for your comfort and lifestyle in the heart of Marrakech. Your villa. Your choice. Your peace of mind.",
     "hero.cta": "DISCOVER THE PROJECT",
@@ -164,7 +187,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "concept.p3":
       "Investing in luxury real estate in Marrakech has never been so serene. Benak Hills redefines Moroccan high-end by combining contemporary architecture and noble finishes.",
     "concept.priceLabel": "Launch Offer",
-    "concept.priceFrom": "Starting from",
+    "concept.priceFrom": "Starting from <gold>4,400,000 MAD</gold>",
     "concept.feat1.title": "240 sqm",
     "concept.feat1.desc": "Optimized living space",
     "concept.feat2.title": "300 sqm+",
@@ -211,6 +234,13 @@ const translations: Record<Lang, Record<string, string>> = {
     "models.02.title": "4 Bedrooms with Master Suite",
     "models.02.desc":
       "This second configuration offers a ground-floor suite, while providing three bedrooms upstairs including a superb master room.",
+    "models.03.title": "4 Bedroom Configuration",
+    "models.03.desc":
+      "A balanced 4-bedroom configuration ideal for comfortable family living.",
+
+    "models.04.title": "3 Bedrooms with Master",
+    "models.04.desc":
+      "An optimized 3-bedroom layout including a master suite, perfect for modern living.",
     "models.plans": "Architectural Plans",
     "models.brochure": "PDF Brochure",
     "models.discuss": "Enquire Now",
@@ -234,7 +264,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "contact.phone": "Phone",
     "contact.email": "Email",
     "contact.address": "Address",
-    "contact.addressValue": "Place la Liberté, Marrakech",
+    "contact.addressValue": "Visit our offices",
     "contact.name": "Full Name",
     "contact.namePlaceholder": "Your name...",
     "contact.emailLabel": "Email Address",
@@ -257,9 +287,24 @@ const translations: Record<Lang, Record<string, string>> = {
     "offers.title": "Exclusive Offers",
     "offers.surface": "Surface",
     "offers.rooms": "Bedrooms",
-    "offers.more": "Enquire Now",
+    "offers.more": "Learn more",
     "offers.desc":
       "Discover our latest villas and land available in the heart of the Benak Hills domain.",
+    "offers.01.title": "5 Bedrooms",
+    "offers.01.desc":
+      "Ideal configuration for large families with generous spaces and optimal layout.",
+
+    "offers.02.title": "4 Bedrooms (Master Room)",
+    "offers.02.desc":
+      "4 bedrooms including a ground-floor master room and 3 bedrooms upstairs.",
+
+    "offers.03.title": "3 Bedrooms (Master Room)",
+    "offers.03.desc":
+      "3 bedrooms including a master room, with an optimized modern living space.",
+
+    "offers.04.title": "4 Bedrooms Upstairs",
+    "offers.04.desc":
+      "4 bedrooms upstairs without a master room, perfect for a classic layout.",
     // Footer
     "footer.desc":
       "Architectural elegance at the service of your serenity. Prestige real estate in Marrakech redefined. Book your future villa now.",
@@ -275,7 +320,15 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Lang>("fr");
+  const [lang, setLangState] = useState<Lang>(() => {
+    const saved = localStorage.getItem("lang");
+    return (saved as Lang) || "fr";
+  });
+
+  const setLang = (newLang: Lang) => {
+    localStorage.setItem("lang", newLang);
+    setLangState(newLang);
+  };
 
   const t = (key: string): string => {
     return translations[lang][key] ?? key;
